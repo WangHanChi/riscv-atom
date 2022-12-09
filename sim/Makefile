@@ -41,6 +41,10 @@ VC := verilator
 VFLAGS := -cc -Wall --trace -D__ATOMSIM_SIMULATION__ --relative-includes		# Fixme: Simplify this macro name
 VFLAGS += -I$(RTL_DIR) -I$(RTL_DIR)/common -I$(RTL_DIR)/core
 VFLAGS += --Mdir $(VERILATED_DIR)
+VFLAGS := -cc -Wall --relative-includes --trace -D__ATOMSIM_SIMULATION__
+
+# This should point to verilator include directory
+VERILATOR_INCLUDE_PATH := /usr/share/verilator/include
 
 # check verilator include directory
 ifeq ("$(wildcard $(VERILATOR_INCLUDE_PATH)/verilated_vcd_c.cpp)","")

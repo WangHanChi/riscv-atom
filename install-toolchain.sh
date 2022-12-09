@@ -7,7 +7,7 @@ TOOLCHAIN_CONFIG=--enable-multilib
 BUILD_JOBS=4
 
 # Toolchain install root directory (Note: Toolchain will be installed inside a folder named TOOLCHAIN_NAME in the TOOLCHAIN_ROOTPATH)
-TOOLCHAIN_ROOTPATH=/home/${user}/opt/riscv
+TOOLCHAIN_ROOTPATH=/home/${USER}/opt/riscv
 
 #########################################################
 # You sould not change anything below this
@@ -56,7 +56,8 @@ mkdir -p ${BUILD_DIR}
 cd ${BUILD_DIR}
 
 echo "../../configure --prefix=$(pwd) ${TOOLCHAIN_CONFIG}"
-../../configure --prefix=$(pwd) ${TOOLCHAIN_CONFIG}
+#../../configure --prefix=$(pwd) ${TOOLCHAIN_CONFIG}
+~/riscv-gnu-toolchain/configure --prefix=$(pwd) ${TOOLCHAIN_CONFIG}
 
 echo "make -j${BUILD_JOBS}"
 make -j${BUILD_JOBS}

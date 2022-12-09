@@ -1,5 +1,6 @@
 #include <W25Q64.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 int main()
 {
@@ -8,7 +9,7 @@ int main()
     
     unsigned int address = 0x000000;
 
-    w25qxxx_init();
+     W25Q64_init();
     printf("Reading... ");
 
     read_bytes(readbuf, n, address);
@@ -24,17 +25,17 @@ int main()
     {
         if(i%print_coloumns==0)
         {
-            putchar('\n'); puts("0x"); puthex(addr+i, 6); puts(" : ");
+            putchar('\n'); puts("0x"); puthex(addr+i, 6, 1); puts(" : ");
             word = 0;
         }
             
         
-        puthex(readbuf[i], 2); putchar(' ');
+        puthex(readbuf[i], 2, 1); putchar(' ');
         word = (word >> 8) | (((unsigned int)readbuf[i]) << 24);
 
         if(i%print_coloumns==print_coloumns-1)
         {
-            puts("(0x"); puthex(word, 8); putchar(')');
+            puts("(0x"); puthex(word, 8, 1); putchar(')');
         }
 
     }
