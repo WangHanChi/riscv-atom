@@ -66,3 +66,5 @@ var12:   .word 0x1234dead
 # eq x10 0x12deadbe
 # eq x11 0x123deadb
 # eq x12 0x1234dead
+# eq x11 0x123deadb
+# eq x12 0x1234dead

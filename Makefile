@@ -153,3 +153,10 @@ clean: clean-sim clean-lib					## Alias for clean-sim, clean-lib
 
 .PHONY: clean-all					
 clean-all: clean-sim clean-scar clean-elfdump clean-lib clean-doxy  ## Clean all build files
+
+
+include mk/riscv-arch-test.mk
+# ======== test ========
+.PHONY: test
+
+#test: $(MAKE) -C test test
