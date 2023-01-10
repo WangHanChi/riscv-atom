@@ -233,6 +233,7 @@ run-all:									## Build & run all examples
 	@$(patsubst %/, echo "${COLOR_CYAN}----------------------------------------------------${COLOR_NC}"; make -s ex=% run;,${EXAMPLE_DIRS})
 
 
+
 .PHONY: clean-all
 clean-all:									## Clean all executables
 	@$(patsubst %/, make -s ex=% clean;,${EXAMPLE_DIRS})

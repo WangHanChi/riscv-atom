@@ -7,6 +7,6 @@ doc/doxygen/
 doc/*.pdf
 docs/_build/
 *.out
-
+*.vcd
 simport
 userport

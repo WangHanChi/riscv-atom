@@ -23,6 +23,8 @@ SECTIONS
     { 
         /*  ----- Initialization Code ----- */
         *(.boot*)
+        /*. = ORIGIN(ROM) + 0x100;*/
+        . = ORIGIN(ROM) + 0x000;
         
         /* ----- Code ----- */
         /* Load all text sections (from all files) */

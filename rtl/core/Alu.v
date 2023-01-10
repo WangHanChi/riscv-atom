@@ -99,11 +99,11 @@ module Alu
     assign result_mul[63:0]     =   $signed  ({{32{a_i[31]}}, a_i[31: 0]}) *
                                     $signed  ({{32{b_i[31]}}, b_i[31: 0]});
 
-    assign result_mulu[63:0]    =   $unsigned  ({{32{a_i[31]}}, a_i[31: 0]}) *
-                                    $unsigned  ({{32{b_i[31]}}, b_i[31: 0]});
+    assign result_mulu[63:0]    =   $unsigned  ({{32{1'b0}}, a_i[31: 0]}) *
+                                    $unsigned  ({{32{1'b0}}, b_i[31: 0]});
     
     assign result_mulsu[63:0]   =   $signed  ({{32{a_i[31]}}, a_i[31: 0]}) *
-                                    $unsigned  ({{32{b_i[31]}}, b_i[31: 0]});
+                                    $unsigned  ({{32{1'b0}}, b_i[31: 0]});
 
     assign result_div[31:0]     =   (b_i == 32'h00000000) ? 32'hffffffff :
                                     ((a_i == 32'h80000000) && (b_i == 32'hffffffff)) ? 32'h80000000 :

@@ -154,6 +154,13 @@ clean: clean-sim clean-lib					## Alias for clean-sim, clean-lib
 .PHONY: clean-all					
 clean-all: clean-sim clean-scar clean-elfdump clean-lib clean-doxy  ## Clean all build files
 
+.PHONY: dhrystone
+dhrystone: 
+	atomsim --maxitr 100000000 -t sw/examples/dhrystone/dhrystone.elf
+
+.PHONY: riscv-test
+riscv-test: 
+	./riscv-test.sh
 
 include mk/riscv-arch-test.mk
 # ======== test ========

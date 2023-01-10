@@ -3,7 +3,7 @@ ifeq ($(shell command -v $(TARGET_SIM) 2> /dev/null),)
     $(error Target simulator executable '$(TARGET_SIM)` not found)
 endif
 
-RUN_TARGET= $(TARGET_SIM)  --maxitr=100000000 $(*).signature.output $(<) > $@
+RUN_TARGET= $(TARGET_SIM) -t --maxitr=100000000 $(*).signature.output $(<) > $@
 
 #RUN_TARGET= $(TARGET_SIM) --maxitr=100000000  $(<) > $(*).signature.output
 

@@ -550,7 +550,7 @@ module Decode
                 `endif
 
                 `ifdef verilator
-                    if(opcode != 7'b1110011) // EBREAK
+                    if(opcode != 7'b1110011 && opcode != 7'b0001111) // EBREAK
                         $display("!Warning: Unimplemented Opcode: %b", opcode);
                 `endif
             end            

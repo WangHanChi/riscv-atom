@@ -41,7 +41,7 @@ SECTIONS
     {
         _sdata = .;
         *(.data*)
-        _global_pointer = . + 0x800;
+        //_global_pointer = . + 0x800;
 
         . = ALIGN(4);
         _edata = .;
