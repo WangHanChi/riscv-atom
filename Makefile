@@ -160,10 +160,10 @@ dhrystone:
 
 .PHONY: riscv-test
 riscv-test: 
-	./riscv-test.sh
+	./scripts/riscv-test.sh	
+	
 
 include mk/riscv-arch-test.mk
 # ======== test ========
 .PHONY: test
-
-#test: $(MAKE) -C test test
+test: $(MAKE) -C test test
