@@ -5,6 +5,7 @@
 RED="\e[31m"
 GREEN="\e[32m"
 ORANGE="\e[33m"
+CYAN="\e[36m"
 NOCOLOR="\e[0m"
 
 cd /home/$USER/riscv-atom/test/riscv-tests/isa
@@ -42,8 +43,8 @@ do
 done
 
 echo
-echo
-echo
+
+
 
 echo "Now test rv32um for riscv-atom!!"
 for isa_RV32UM in ${isa_RV32UM_p[@]}
@@ -67,8 +68,20 @@ echo "=============================="
 echo "rv32ui-p instruction set :"
 echo -e "${NOCOLOR}The pass rate is ${GREEN}$suss_rv32ui/$total_rv32ui"
 echo -e "${NOCOLOR}The fail rate is ${RED}$fail_rv32ui/$total_rv32ui${NOCOLOR}"
+if [ $fail_rv32ui == "0" ]
+then 
+	echo -e "${CYAN}Pass rv32ui-p testing! ${NOCOLOR}"
+else
+	echo -e "${CYAN}Fail rv32ui-p testing! ${NOCOLOR}"
+fi	
 echo "=============================="
 echo "rv32um-p instruction set :"
 echo -e "${NOCOLOR}The pass rate is ${GREEN}$suss_rv32um/$total_rv32um"
 echo -e "${NOCOLOR}The fail rate is ${RED}$fail_rv32um/$total_rv32um${NOCOLOR}"
+if [ $fail_rv32um == "0" ]
+then 
+	echo -e "${CYAN}Pass rv32um-p testing! ${NOCOLOR}"
+else
+	echo -e "${CYAN}Fail rv32um-p testing! ${NOCOLOR}"
+fi	
 echo "=============================="
