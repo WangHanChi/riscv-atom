@@ -1,0 +1,3 @@
+Loading segment 1 [base=0x00000000, sz=   956 bytes, at=0x00000000] ...	done
+Loading segment 2 [base=0x00001000, sz=  4112 bytes, at=0x00001000] ...	done
+1
