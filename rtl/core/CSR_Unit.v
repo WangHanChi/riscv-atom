@@ -4,16 +4,14 @@
 //  Description : Control & Status Register (CSR) unit contains logic 
 //      to read and write to the CSR registers
 ////////////////////////////////////////////////////////////////////
-`default_nettype none
-`include "../common/Utils.vh"
 
-module CSR_Unit#
+`include "Utils.vh"
+`include "Defs.vh"
+
+`default_nettype none
+
+module CSR_Unit
 (
-    parameter [31:0]    VEND_ID     = 32'h0000_0000,
-    parameter [31:0]    ARCH_ID     = 32'h0000_0000,
-    parameter [31:0]    IMPL_ID     = 32'h0000_0000,
-    parameter [31:0]    HART_ID     = 32'h0000_0000
-)(
     // Global signals
     input   wire    clk_i,
     input   wire    rst_i,
@@ -74,16 +72,16 @@ module CSR_Unit#
         read_value = 0;
         
         case(addr_i)
-            12'hf11: read_value = VEND_ID;
-            12'hf12: read_value = ARCH_ID;
-            12'hf13: read_value = IMPL_ID;
-            12'hf14: read_value = HART_ID;
+            12'hc00: begin
+                read_value = csr_cycle[31:0];
+            end
 
-            12'hc00: read_value = csr_cycle[31:0];  // cycle
-            12'hc80: read_value = csr_cycle[63:32]; // cycleh
+            12'hc80: begin
+                read_value = csr_cycle[63:32];
+            end
+                
             default: begin
-                // $display("RTL_ERR: invalid read to CSR addr 0x%x", addr_i);
-                read_value = 32'hxxxx_xxxx;
+                read_value = 0;
             end
                 
         endcase

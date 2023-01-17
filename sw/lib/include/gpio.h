@@ -1,18 +1,9 @@
 #ifndef __GPIO_H__
 #define __GPIO_H__
 
-#include <stdint.h>
-#include <stdbool.h>
+typedef enum {LOW=0, HIGH=1} gpio_state;
+typedef enum {OUTPUT=0, INPUT=1} gpio_direction;
 
-typedef enum {
-    LOW=0, 
-    HIGH=1
-} gpio_state_t;
-
-typedef enum {
-    OUTPUT=0, 
-    INPUT=1
-} gpio_direction_t;
 
 /**
  * @brief Initialize GPIO
@@ -27,20 +18,13 @@ void gpio_reset();
 
 
 /**
- * @brief Read the current GPIO pin value
+ * @brief Read the current GPIO pin values
  * 
  * @param pin pin number
- * @return gpio_state_t pin value
+ * @return gpio_state pin value
  */
-gpio_state_t gpio_read(int pin);
+gpio_state gpio_read(int pin);
 
-
-/**
- * @brief Read the current GPIO pins
- * 
- * @return gpio_state_t pin values
- */
-uint32_t gpio_readw();
 
 /**
  * @brief Write to a GPIO pin
@@ -48,14 +32,8 @@ uint32_t gpio_readw();
  * @param pin pin number
  * @param state state
  */
-void gpio_write(int pin, gpio_state_t state);
+void gpio_write(int pin, gpio_state state);
 
-/**
- * @brief Write to GPIO pins
- * 
- * @param state pin values
- */
-void gpio_writew(uint32_t state);
 
 /**
  * @brief Set mode of a GPIO pin
@@ -63,15 +41,15 @@ void gpio_writew(uint32_t state);
  * @param pin pin number
  * @param mode mode (INPUT/OUTPUT)
  */
-void gpio_setmode(int pin, gpio_direction_t mode);
+void gpio_setmode(int pin, gpio_direction mode);
 
 
 /**
  * @brief Get mode of a GPIO pin
  * 
  * @param pin gpio pin
- * @return gpio_direction_t 
+ * @return gpio_direction 
  */
-gpio_direction_t gpio_getmode(int pin);
+gpio_direction gpio_getmode(int pin);
 
 #endif // __GPIO_H__

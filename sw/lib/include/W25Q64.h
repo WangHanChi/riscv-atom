@@ -1,6 +1,7 @@
 #ifndef __W25Q64_H__
 #define __W25Q64_H__
 #include <stdint.h>
+#include <stdbool.h>
 
 // CODES
 #define CMD_WRITE_ENABLE      0x06

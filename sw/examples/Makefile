@@ -13,20 +13,11 @@ soctarget ?= None
 # example to compile              (to be overridden)
 ex ?= None
 
-# Compile for simulation          (may be overridden)
-sim ?= false
-
 # Vuart for make run example      (may be overridden)
 vuart ?= None
 
 # Save objdump while compiling    (may be overridden)
 objdump ?= true
-
-# Save binary while compiling     (may be overridden)
-bin ?= true
-
-# Save map file while compiling   (may be overridden)
-map ?= true
 
 ########################################################################
 # Checks
@@ -77,12 +68,6 @@ ifeq ($(__check_env),true)
 endif
 
 
-RVPREFIX := riscv64-unknown-elf
-CFLAGS := -Wall
-CFLAGS += -mabi=ilp32 -march=rv32i -nostartfiles -ffreestanding -Os
-CFLAGS += -I $(RVATOM_LIB)/include -L $(RVATOM_LIB)
-
-LINKERSCRIPT := None
 #### check soctarget ####
 ifeq ($(__check_soctarget),true)
 
@@ -100,24 +85,17 @@ ifeq ($(__check_soctarget),true)
 
     # check for validity of soctarget & select compile script
     ifeq ($(soctarget),atombones)
-        CFLAGS += -DTARGET_ATOMBONES
-        LINKERSCRIPT:= $(RVATOM_LIB)/link/link.ld
+        COMPILE_SCRIPT = $(RVATOM)/scripts/compile-atombones
     else
-    ifeq ($(soctarget),hydrogensoc)
-        CFLAGS += -DTARGET_HYDROGENSOC
-        LINKERSCRIPT:= $(RVATOM_LIB)/link/link_hydrogensoc.ld
-    else
-        $(error Invalid SoC target target $(soctarget))
-    endif
-    endif
-
-    ifeq ($(boot), true)
-        LINKERSCRIPT:= ../flashboot/link_app.lds
+        ifeq ($(soctarget),hydrogensoc)
+            COMPILE_SCRIPT = $(RVATOM)/scripts/compile-hydrogensoc
+        else
+            $(error Invalid SoC target target $(soctarget))
+        endif
     endif
 
 endif
 
-LFLAGS := -T $(LINKERSCRIPT) -lcatom -Wl,--gc-sections
 
 #### check ex ####
 ifeq ($(__check_eg), true)
@@ -147,19 +125,11 @@ EXAMPLE_DIRS = $(sort $(dir $(wildcard */)))
 SRC_FILES = $(patsubst %, $(ex)/%, $(src_files))
 
 # atomsim args
-ATOMSIM_ARGS = --maxitr=999999999 --enable-uart-dump
+ATOMSIM_ARGS = --maxitr=999999999
 
 # VUART setting
 ifneq ($(vuart), None)
     ATOMSIM_ARGS += --vuart=$(vuart)
-endif
-
-ifeq ($(map), true)
-    LFLAGS += -Xlinker -Map $(executable).map
-endif
-
-ifeq ($(sim), true)
-    CFLAGS += -DSIM
 endif
 
 .DEFAULT_GOAL := help
@@ -198,15 +168,10 @@ compile: $(ex)/$(executable)				## Compile specified example
 
 $(ex)/$(executable): $(SRC_FILES)
 	@printf "$(COLOR_CYAN)%-15s | Compiling   %-35s <-  %s$(COLOR_NC)\n" ${ex} $@ $<
-	cd $(ex) && $(RVPREFIX)-gcc $(CFLAGS) $(src_files) -o $(executable) $(LFLAGS)
+	cd $(ex) && $(COMPILE_SCRIPT) $(CFLAGS) $(src_files) -o $(executable) $(LFLAGS)
 
 ifeq ($(objdump), true)
-	$(RVPREFIX)-objdump -htd $@ > $@.objdump
-endif
-
-ifeq ($(bin), true)
-	$(RVPREFIX)-objcopy -O binary $@ $@.bin
-	@printf "Binary size: %s bytes\n" $$(stat --format=%s "$@.bin")
+	riscv64-unknown-elf-objdump -htd $@ > $@.objdump
 endif
 
 
@@ -222,7 +187,7 @@ objdump: $(ex)/$(executable)				## Dump disassembly
 .PHONY: clean
 clean:										## Clean executable
 	@echo "${COLOR_CYAN}Cleaning \"${ex}\" example binaries ${COLOR_NC}"
-	rm -f $(ex)/$(executable) $(ex)/*.o $(ex)/*.map $(ex)/*.objdump
+	rm -f $(ex)/$(executable)
 
 
 all:										## Build all examples
@@ -231,6 +196,7 @@ all:										## Build all examples
 
 run-all:									## Build & run all examples
 	@$(patsubst %/, echo "${COLOR_CYAN}----------------------------------------------------${COLOR_NC}"; make -s ex=% run;,${EXAMPLE_DIRS})
+
 
 
 .PHONY: clean-all

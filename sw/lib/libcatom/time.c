@@ -1,9 +1,27 @@
 #include <stdint.h>
-#include "csr.h"
+#include <csr.h>
+
 #include "time.h"
 
-#define CLOCKS_PER_SEC CLK_FREQ
+/**
+ * @brief sleep for some specified duration
+ * 
+ * @param count time (in ms)
+ */
+void sleep(long unsigned int count)
+{
+    #ifdef SW_SLEEP
+    count = count*DELAY_SCALE_FACTOR;
+    while(count-->0);
+    #endif
+}
 
+
+/**
+ * @brief Get current CPU ticks
+ * 
+ * @return clock_t 
+ */
 clock_t cycle()
 {
     union 
@@ -28,22 +46,4 @@ clock_t cycle()
     cycles.uint32[1] = tmp3;
 
     return cycles.uint64;
-}
-
-
-void sleep_ms(clock_t ms)
-{
-    clock_t tend = cycle() + (ms * (CLOCKS_PER_SEC/1000));
-    while(cycle() < tend) {
-        asm volatile("");
-    }
-}
-
-
-void sleep_us(clock_t ms)
-{
-    clock_t tend = cycle() + (ms * (CLOCKS_PER_SEC/1000000));
-    while(cycle() < tend) {
-        asm volatile("");
-    }
 }

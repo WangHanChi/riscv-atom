@@ -9,13 +9,11 @@
 #define TARGET_HYDROGENSOC
 
 class Vuart;
-class BitbangUART;
 
 struct Backend_config
 {
     std::string vuart_portname  = "";
-    uint32_t vuart_baudrate     = 115200;
-    bool enable_uart_dump       = false;
+    uint32_t vuart_baudrate     = 9600;
 };
 
 
@@ -64,9 +62,4 @@ private:
      * @brief Are we using vuart?
      */
     bool using_vuart_ = false;
-
-    /**
-     * @brief UART btbang drver
-     */
-    BitbangUART *bb_uart_;
 };

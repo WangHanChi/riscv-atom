@@ -1,5 +1,7 @@
-.global _start
-_start:
+.global main
+
+.text
+main:
     # Stores
     la x31, memloc
 

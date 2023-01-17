@@ -23,8 +23,10 @@ THE SOFTWARE.
 */
 
 // Language: Verilog 2001
+`include "../../core/Utils.vh"
+`include "arbiter.v"
 `default_nettype none
-`include "../../common/Utils.vh"
+`timescale 1 ns / 1 ps
 
 /*
  * Wishbone 3 port arbiter

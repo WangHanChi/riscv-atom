@@ -1,8 +1,0 @@
-*.elf
-*.o
-*.bin
-*.map
-*.objdump
-*.hex
-*.vcd
-*.gtkw

@@ -2,10 +2,18 @@
 #define __STDIO_H__
 
 #include <stdbool.h>
-#include "serial.h"
 
 // Send Carrige Return before Linefeed
 #define SEND_CR_BEFORE_LF
+
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
+
+#ifndef __SIZE_T_DEFINED
+#define __SIZE_T_DEFINED
+typedef unsigned long size_t;
+#endif
 
 #define EOF (-1)
 

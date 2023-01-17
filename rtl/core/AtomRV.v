@@ -10,23 +10,24 @@
 //  Description : Atom is a 2-stage pipelined embedded class 32-bit 
 //      RISCV core. It is based on RV32I ISA
 ///////////////////////////////////////////////////////////////////
+
+`include "../Timescale.vh"
+`include "Utils.vh"
 `include "Defs.vh"
-// `include "Utils.vh"
+
+`include "Decode.v"
+`include "RegisterFile.v"
+`include "Alu.v"
+`include "CSR_Unit.v"
 
 `default_nettype none
 
-module AtomRV # (   
-    parameter [31:0]    VEND_ID     = 32'h0000_0000,
-    parameter [31:0]    ARCH_ID     = 32'h0000_0000,
-    parameter [31:0]    IMPL_ID     = 32'h0000_0000,
-    parameter [31:0]    HART_ID     = 32'h0000_0000
-)
+module AtomRV
 (
     // ========== General ==========
     input   wire            clk_i,          // clock
     input   wire            rst_i,          // reset
 
-    input   wire    [31:0]  reset_vector_i,
 
     // ========== IMEM Port ==========
     output  wire    [31:0]  imem_addr_o,    // IMEM Address
@@ -149,7 +150,7 @@ module AtomRV # (
 
     always @(posedge clk_i) begin 
         if(rst_i)
-            ProgramCounter <= reset_vector_i;
+            ProgramCounter <= `RESET_PC_ADDRESS;
 
         else if(jump_decision)
             ProgramCounter <= {alu_out[31:1], 1'b0};    // Only jump to 16 bit aligned addresses, also JALR enforces this
@@ -241,15 +242,12 @@ module AtomRV # (
     wire            d_a_op_sel;
     wire            d_b_op_sel;
     wire            d_cmp_b_op_sel;
-    wire    [2:0]   d_alu_op_sel;
+    wire    [3:0]   d_alu_op_sel;
     wire    [2:0]   d_mem_access_width;
     wire            d_mem_load_store;
     wire            d_mem_we;
-
-    `ifdef RV_ZICSR
     wire    [2:0]   d_csru_op_sel;
     wire            d_csru_we;
-    `endif
 
 
     Decode decode
@@ -272,13 +270,9 @@ module AtomRV # (
         .alu_op_sel_o       (d_alu_op_sel),
         .mem_access_width_o (d_mem_access_width),
         .d_mem_load_store   (d_mem_load_store),
-        .mem_we_o           (d_mem_we)
-        
-        `ifdef RV_ZICSR
-        ,
+        .mem_we_o           (d_mem_we),
         .csru_op_sel_o      (d_csru_op_sel),
         .csru_we_o          (d_csru_we)
-        `endif
     );
 
 
@@ -297,49 +291,30 @@ module AtomRV # (
             3'd2:   rf_rd_data = alu_out;
             3'd3:   rf_rd_data = {31'd0, comparison_result};
             3'd4:   rf_rd_data = memload;
-            `ifdef RV_ZICSR
             3'd5:   rf_rd_data = csru_data_o;
-            `endif
 
             default: rf_rd_data = 32'd0;
         endcase
     end
 
-
-    `ifdef RV_E
-    localparam RF_INDX_BITS = 3;
-    localparam RF_NREGS = 16;
-    `else
-    localparam RF_INDX_BITS = 4;
-    localparam RF_NREGS = 32;
-    `endif
-
     wire    [31:0]  rf_rs1;
     wire    [31:0]  rf_rs2;
 
-    RegisterFile#(
-        .REG_WIDTH(32), 
-        .NUM_REGS(RF_NREGS),
-        .R0_IS_ZERO(1)
-    ) rf (
-        .Clk_i      (clk_i),
-        .Rst_i      (rst_i),
-        .Ra_Sel_i   (d_rs1_sel[RF_INDX_BITS:0]),
+    RegisterFile  #(.REG_WIDTH(32), .REG_ADDR_WIDTH(5)) rf
+    (
+        .Ra_Sel_i   (d_rs1_sel),
         .Ra_o       (rf_rs1),
-        .Rb_Sel_i   (d_rs2_sel[RF_INDX_BITS:0]),
-        .Rb_o       (rf_rs2),
-        .Data_We_i  (d_rf_we & !stall_stage2),
-        .Rd_Sel_i   (d_rd_sel[RF_INDX_BITS:0]),
-        .Data_i     (rf_rd_data)
-    );
 
-    `ifdef RV_E
-        // We need these because we are not using MSB 
-        // of select lines in RV_E
-        `UNUSED_VAR(d_rs1_sel)
-        `UNUSED_VAR(d_rs2_sel)
-        `UNUSED_VAR(d_rd_sel)
-    `endif
+        .Rb_Sel_i   (d_rs2_sel),
+        .Rb_o       (rf_rs2),
+
+        .Data_We_i  (d_rf_we & !stall_stage2),
+        .Rd_Sel_i   (d_rd_sel),
+        .Data_i     (rf_rd_data),
+
+        .Clk_i      (clk_i),
+        .Rst_i      (rst_i)
+    );
 
 
     /*
@@ -386,7 +361,7 @@ module AtomRV # (
         endcase
     end
 
-    `ifdef RV_ZICSR
+
     /*
         ////// CSR Unit //////
         Contains all the Control and status registers
@@ -397,13 +372,8 @@ module AtomRV # (
     // check if it is imm type CSR instruction and send data_i accordingly
     wire    [31:0]  csru_data_i = d_csru_op_sel[2] ? {{27{1'b0}}, d_rs1_sel} : rf_rs1;
 
-    CSR_Unit#
+    CSR_Unit csr_unit
     (
-        .VEND_ID    (VEND_ID),
-        .ARCH_ID    (ARCH_ID),
-        .IMPL_ID    (IMPL_ID),
-        .HART_ID    (HART_ID)
-    ) csr_unit (
         // Global signals
         .clk_i   (clk_i),
         .rst_i   (rst_i),
@@ -415,7 +385,6 @@ module AtomRV # (
         .we_i   (d_csru_we),
         .data_o (csru_data_o)
     );
-    `endif
 
 
     /*

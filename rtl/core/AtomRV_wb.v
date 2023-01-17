@@ -3,6 +3,9 @@
 //  Author      : Saurabh Singh (saurabh.s99100@gmail.com)
 //  Description : Wishbone wrapper for Atom core
 ////////////////////////////////////////////////////////////////////
+
+`include "AtomRV.v"
+
 `default_nettype none
 
 /*
@@ -12,8 +15,6 @@ module AtomRV_wb
 (
     input   wire            wb_clk_i,
     input   wire            wb_rst_i,
-
-    input   wire    [31:0]  reset_vector_i,
 
     // === IBUS Wishbone Master Interface ===
     output  reg     [31:0]  iport_wb_adr_o,
@@ -61,8 +62,6 @@ module AtomRV_wb
     (
         .clk_i          (wb_clk_i),
         .rst_i          (wb_rst_i),
-
-        .reset_vector_i (reset_vector_i),
 
         .imem_addr_o    (imem_addr_o),
         .imem_data_i    (imem_data_i),

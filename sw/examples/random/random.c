@@ -3,9 +3,7 @@
 
 void main()
 {
-    serial_init(UART_BAUD_115200);
-
-    printf("Printing 10 Random numbers using default seed\n");
+    printf("Printing 10 Random numbers using seed %d: \n", rand_seed);
     int i=0;
     for(i=0; i<10; i++)
     {   

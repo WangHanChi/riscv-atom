@@ -1,4 +1,5 @@
 // @see https://www.thecrazyprogrammer.com/2017/06/dining-philosophers-problem-c-c.html
+
 #include<stdio.h>
  
 #define n 4
@@ -109,8 +110,6 @@ void goForDinner(int philID)
 
 int main()
 {
-    serial_init(UART_BAUD_115200);
-
     for(i=0; i<n; i++)
         ForkAvil[i].taken=Philostatus[i].left=Philostatus[i].right=0;
  

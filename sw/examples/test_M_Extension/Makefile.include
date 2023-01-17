@@ -1,0 +1,2 @@
+src_files = test_M_Extension.c
+executable = test_M_Extension.elf

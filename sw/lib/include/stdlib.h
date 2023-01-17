@@ -1,7 +1,15 @@
 #ifndef __STDLIB_H___
 #define __STDLIB_H___
 
-#include "stddef.h"
+// Define value of NULL pointer constant
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
+
+#ifndef __SIZE_T_DEFINED
+#define __SIZE_T_DEFINED
+typedef unsigned long size_t;
+#endif
 
 // Define Exit codes
 #define EXIT_FAILURE 1
@@ -31,6 +39,8 @@ int xtoi(char *s1);
 
 ///////////////////////////////////////////////////////////////////
 // Random Number Generater
+
+static int rand_seed = 54973;   // default seed
 
 /**
  * @brief Seed random number generator

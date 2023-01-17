@@ -1,20 +1,22 @@
+#h *** Makefile for Building AtomSim ***
+
 ####################################################
-#h ********* Makefile for Building AtomSim *********
-####################################################
+# override these with CLI
 
-# To configure build, override the following 
-# vaiables from command line while calling make, 
-# like so:
-#	$ make soctarget=hydrogensoc
-
-soctarget ?= None
-DEBUG ?= 0
-DPI ?= 0
-
-# Uncomment/define while calling make to disable colors
+soctarget ?= atombones
+# Debug = 1
+# DPI = 1
 # NO_COLOR = 1
 
-include ../common.mk
+
+# Define bash color codes
+ifndef NO_COLOR
+COLOR_RED 		:= \033[0;31m
+COLOR_GREEN 	:= \033[0;32m
+COLOR_YELLOW 	:= \033[0;33m
+COLOR_CYAN 	    := \033[0;36m
+COLOR_NC 		:= \033[0m
+endif
 
 
 ####################################################
@@ -22,7 +24,6 @@ include ../common.mk
 
 RTL_DIR := ../rtl
 BUILD_DIR := build
-
 OBJ_DIR := $(BUILD_DIR)/obj
 VERILATED_DIR := $(BUILD_DIR)/verilated
 BIN_DIR := $(BUILD_DIR)/bin
@@ -31,28 +32,33 @@ DEPDIR := $(BUILD_DIR)/.depend
 RUN_DIR := run
 
 # make directories during makefile-parse
-$(shell mkdir -p $(OBJ_DIR) $(VERILATED_DIR) $(BIN_DIR) $(DEPDIR) $(RUN_DIR))
+$(shell mkdir -p $(OBJ_DIR) $(BIN_DIR) $(VERILATED_DIR) $(DEPDIR) $(RUN_DIR))
 
-include ../config.mk
+
 ####################################################
 # Verilog Configs
 
 VC := verilator
-VFLAGS := -cc -Wall --trace -D__ATOMSIM_SIMULATION__ --relative-includes		# Fixme: Simplify this macro name
-VFLAGS += -I$(RTL_DIR) -I$(RTL_DIR)/common -I$(RTL_DIR)/core
-VFLAGS += --Mdir $(VERILATED_DIR)
+VFLAGS := -cc -Wall --relative-includes --trace -D__ATOMSIM_SIMULATION__
 
-# check verilator include directory
+# This should point to verilator include directory
+VERILATOR_INCLUDE_PATH := /usr/share/verilator/include
+
 ifeq ("$(wildcard $(VERILATOR_INCLUDE_PATH)/verilated_vcd_c.cpp)","")
 $(error Verilator include path invalid; Set correct Verilator include path in sim/Makefile)
 endif
 
+
 # Core files
-VSRCS := $(RTL_DIR)/core/AtomRV.v
-VSRCS += $(RTL_DIR)/core/Alu.v
+VSRCS =  $(RTL_DIR)/Timescale.vh
+VSRCS += $(RTL_DIR)/core/Utils.vh 
+VSRCS += $(RTL_DIR)/core/Defs.vh 
+VSRCS += $(RTL_DIR)/core/AtomRV.v 
+VSRCS += $(RTL_DIR)/core/Alu.v 
 VSRCS += $(RTL_DIR)/core/Decode.v 
 VSRCS += $(RTL_DIR)/core/RegisterFile.v 
 VSRCS += $(RTL_DIR)/core/CSR_Unit.v
+
 
 
 ####################################################
@@ -75,55 +81,39 @@ COMPILE_CPP_MACRO = $(CC) $(DEPFLAGS) $(CFLAGS) $(INCLUDES) -c -o $@
 
 
 ####################################################
-# Soctarget Specific definitions
+# SOCtarget Specific definitions
 
-# use default soctarget if not specified
-DEFAULT_SOCTARGET := atombones
+ifeq ($(soctarget), atombones) 	    # =========================[ AtomBones ]
 
-ifeq ($(soctarget), None)
-    soctarget := $(DEFAULT_SOCTARGET)
-    $(warning No soctarget specified, building for default: $(DEFAULT_SOCTARGET))
-endif
+VTOPMODULE := AtomBones
+VTOPMODULE_FILE := $(RTL_DIR)/$(VTOPMODULE).v
+SIM_BACKEND_FILE := backend_atombones.cpp
+CFLAGS += -DTARGET_HEADER='"backend_atombones.hpp"'
 
-# -------------------- AtomBones --------------------
-ifeq ($(soctarget), atombones)
-    VTOPMODULE := AtomBones
-    VTOPMODULE_FILE := $(RTL_DIR)/$(VTOPMODULE).v
-    SIM_BACKEND_FILE := backend_atombones.cpp
-    CFLAGS += -DTARGET_HEADER='"backend_atombones.hpp"'
 
 else
-# ------------------- HydrogenSoC -------------------
-ifeq ($(soctarget), hydrogensoc)
+ifeq ($(soctarget), hydrogensoc) 	# =========================[ HydrogenSoC ]
 
-    VTOPMODULE := HydrogenSoC
-    VTOPMODULE_FILE := $(RTL_DIR)/$(VTOPMODULE).v
+VTOPMODULE := HydrogenSoC
+VTOPMODULE_FILE := $(RTL_DIR)/$(VTOPMODULE).v
 
-    # core wrapper
-    VSRCS += $(RTL_DIR)/core/AtomRV_wb.v 
+VSRCS += $(RTL_DIR)/core/AtomRV_wb.v 
+VSRCS += $(RTL_DIR)/uncore/BiDirectionalIO.v
+VSRCS += $(RTL_DIR)/uncore/GPIO.v
+VSRCS += $(RTL_DIR)/uncore/DualPortRAM_wb.v
+VSRCS += $(RTL_DIR)/uncore/SinglePortRAM_wb.v
+VSRCS += $(RTL_DIR)/uncore/simpleuart_wb.v
+VSRCS += $(RTL_DIR)/uncore/simpleuart.v
+VSRCS += $(RTL_DIR)/HydrogenSoC_Config.vh
 
-    # arbiter
-    VSRCS += $(RTL_DIR)/uncore/wishbone/arbiter.v
-    VSRCS += $(RTL_DIR)/uncore/wishbone/arbiter3_wb.v
-    VSRCS += $(RTL_DIR)/uncore/wishbone/priority_encoder.v
+VFLAGS += -D__ROM_INIT_FILE__='"$(RVATOM)/sim/$(RUN_DIR)/rom.hex"'
+VFLAGS += -D__RAM_INIT_FILE__='"$(RVATOM)/sim/$(RUN_DIR)/ram.hex"'
 
-    # periphs
-    VSRCS += $(RTL_DIR)/uncore/gpio/IOBuf.v
-    VSRCS += $(RTL_DIR)/uncore/gpio/GPIO.v
-    VSRCS += $(RTL_DIR)/uncore/mem/DualPortRAM_wb.v
-    VSRCS += $(RTL_DIR)/uncore/mem/SinglePortRAM_wb.v
-    VSRCS += $(RTL_DIR)/uncore/uart/UART.v
-    VSRCS += $(RTL_DIR)/uncore/uart/UART_core.v
-
-    VFLAGS += -D__ROM_INIT_FILE__='"$(RVATOM)/sim/$(RUN_DIR)/rom.hex"'
-
-    # cpp
-    SRCS += bitbang_uart.cpp
-    SIM_BACKEND_FILE := backend_hydrogensoc.cpp
-    CFLAGS += -DTARGET_HEADER='"backend_hydrogensoc.hpp"'
+SIM_BACKEND_FILE := backend_hydrogensoc.cpp
+CFLAGS += -DTARGET_HEADER='"backend_hydrogensoc.hpp"'
 
 else
-$(error soctarget not specified; See make help)
+$(error Build target for AtomSim not specified; Specify a target using: make soctarget=<atomsim/hydrogensoc>)
 endif
 endif
 
@@ -144,25 +134,26 @@ DEPS_ := $(patsubst %.cpp, %.Td, $(SRCS))			# change .cpp -> .Td
 DEPS__ := $(notdir $(DEPS_))						# extract filename, discard full path
 DEPS := $(patsubst %, $(DEPDIR)/%, $(DEPS__))		# prefix with directory path
 
-# Append verilator objects	(verilated.o, verilated_vcd_c.o, verilated_threads.o)
-OBJS += $(OBJ_DIR)/verilated.o $(OBJ_DIR)/verilated_vcd_c.o	$(OBJ_DIR)/verilated_threads.o
+# Append verilator objects	(verilated.o & verilated_vcd_c.o)
+OBJS += $(OBJ_DIR)/verilated.o $(OBJ_DIR)/verilated_vcd_c.o		
 
 LDFLAGS += -L build/verilated
 LDLIBS += -l:V$(VTOPMODULE)__ALL.a
 
-
 # Append DPI objects & add DPI flags 	(if DPI is defined)
-ifeq ($(DPI), 1)
-    OBJS += $(OBJ_DIR)/util_dpi.o
-    VFLAGS += -DDPI_LOGGER -DLOG_RVATOM_JUMP
+ifdef DPI
+OBJS += $(OBJ_DIR)/util_dpi.o
+VFLAGS += -DDPI_LOGGER -DLOG_RVATOM_JUMP
 endif
+
 
 # Append debugigng flags
-ifeq ($(DEBUG), 1)
-    CFLAGS += -g -O0 -DDEBUG_LEVEL=$(DEBUG)
+ifdef DEBUG
+	CFLAGS += -g -O0 -DDEBUG_LEVEL=$(DEBUG)
 else    
-    CFLAGS += -O3 -DNDEBUG
+	CFLAGS += -O0 -DNDEBUG
 endif
+
 
 
 ####################################################
@@ -175,37 +166,38 @@ lib_verilated: $(VERILATED_DIR)/V$(VTOPMODULE)__ALL.a
 
 # Verilate verilog
 $(VERILATED_DIR)/V$(VTOPMODULE)__ALL.a: $(VTOPMODULE_FILE) $(VSRCS)
-	@printf "$(CLR_CY)> Verilating Verilog files$(CLR_NC)\n"
-	$(VC) $(VFLAGS) $^
+	@printf "$(COLOR_CYAN)Verilating Verilog files$(COLOR_NC)\n"
+	$(VC) $(VFLAGS) $< --Mdir $(VERILATED_DIR)
 
-	@printf "$(CLR_CY)> Generating shared object$(CLR_NC)\n"
-	make -s -C $(VERILATED_DIR) -f V$(VTOPMODULE).mk
+	@printf "$(COLOR_CYAN)Generating shared object$(COLOR_NC)\n"
+	make -C $(VERILATED_DIR) -f V$(VTOPMODULE).mk
 
 
 # Generic rule to compile Cpp Files in .
 $(OBJ_DIR)/%.o: %.cpp
 $(OBJ_DIR)/%.o: %.cpp $(DEPDIR)/%.Td
-	@printf "$(CLR_CY)> Compiling   %-35s <-  %s$(CLR_NC)\n" $@ $<
+	@printf "$(COLOR_CYAN)Compiling   %-35s <-  %s$(COLOR_NC)\n" $@ $<
 	$(COMPILE_CPP_MACRO) $<
 
 # Generic rule to compile Cpp Files in VERILATOR_INCLUDE_PATH (verilated.cpp & verilated.vcd_c.cpp)
 $(OBJ_DIR)/%.o: $(VERILATOR_INCLUDE_PATH)/%.cpp
 $(OBJ_DIR)/%.o: $(VERILATOR_INCLUDE_PATH)/%.cpp $(DEPDIR)/%.Td
-	@printf "$(CLR_CY)> Compiling   %-35s <-  %s$(CLR_NC)\n" $@ $<
+	@printf "$(COLOR_CYAN)Compiling   %-35s <-  %s$(COLOR_NC)\n" $@ $<
 	$(COMPILE_CPP_MACRO) $<
 
 # Generic rule to compile Cpp Files rtl/dpi
 $(OBJ_DIR)/%.o: $(RTL_DIR)/dpi/%.cpp
 $(OBJ_DIR)/%.o: $(RTL_DIR)/dpi/%.cpp $(DEPDIR)/%.Td
-	@printf "$(CLR_CY)> Compiling   %-35s <-  %s$(CLR_NC)\n" $@ $<
+	@printf "$(COLOR_CYAN)Compiling   %-35s <-  %s$(COLOR_NC)\n" $@ $<
 	$(COMPILE_CPP_MACRO) $<
 
 
 # Link & Create executable
 $(EXE): $(OBJS)
-	@printf "$(CLR_CY)> Linking shared object and driver to create executable $(CLR_NC)\n"
+	@printf "$(COLOR_CYAN)Linking shared object and driver to create executable $(COLOR_NC)\n"
 	$(CC) $^ -o $@ $(LDLIBS) $(LDFLAGS)
-	@printf "$(CLR_CY)> Build successful!  [soctarget: $(soctarget)] $(CLR_NC)\n"
+
+	@printf "$(COLOR_CYAN)Build successful! $(COLOR_NC)\n"
 
 .PRECIOUS: $(DEPDIR)/%.Td
 $(DEPDIR)/%.Td: ;
@@ -228,12 +220,13 @@ help: 									#t Show help
 	@echo "	$$ make soctarget=[SOCTARGET] [TARGET]"
 	@echo ""
 	@echo "TARGETs:"
-	@grep -E -h '\s#t\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?#t "}; {printf "\t\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@egrep -h '\s#t\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?#t "}; {printf "\t\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
 	@sed -n 's/^#f //p' Makefile
 
 
-# Extra to be printed in make help
+# Extra info footer
+
 #f 
 #f SOCTARGETs:
 #f 	atombones

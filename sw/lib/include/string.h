@@ -1,7 +1,14 @@
 #ifndef __STRING_H__
 #define __STRING_H__
 
-#include "stddef.h"
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
+
+#ifndef __SIZE_T_DEFINED
+#define __SIZE_T_DEFINED
+typedef unsigned long size_t;
+#endif
 
 #define NUL '\0'
 
@@ -44,15 +51,6 @@ size_t strlen(char *s1);
  * @return char* 
  */
 char *strtok(char *str,char *dptr);
-
-/**
- * @brief Copy string
- * 
- * @param dest destination ptr
- * @param src source ptr
- * @return char* destination ptr
- */
-char * strcpy (char *dest, const char *src);
 
 
 // memory manipulation

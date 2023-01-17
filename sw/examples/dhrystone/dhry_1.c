@@ -95,9 +95,9 @@ main ()
   REG   int             Number_Of_Runs;
 
   /* Initializations */
-  #ifdef RISCV
-  serial_init(UART_BAUD_115200);
-  #endif
+  //#ifdef RISCV
+  //serial_init(UART_BAUD_9600);
+  //#endif
   
   Next_Ptr_Glob = (Rec_Pointer) malloc (sizeof (Rec_Type));
   Ptr_Glob = (Rec_Pointer) malloc (sizeof (Rec_Type));

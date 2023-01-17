@@ -1,28 +1,30 @@
 #ifndef __PLATFORM_H__
 #define __PLATFORM_H__
-#include "stddef.h"
 
 // ============== Target Independent Definitions ==============
+// Useful Macros
+#ifndef __SIZE_T_DEFINED
+#define __SIZE_T_DEFINED
+typedef unsigned long size_t;
+#endif
 
-// Bitmanip Macros
-#define bitset(data, nbit)      ((data) |  (1<<(nbit)))
-#define bitclear(data, nbit)    ((data) & ~(1<<(nbit)))
-#define bitflip(data, nbit)     ((data) ^  (1<<(nbit)))
-#define bitcheck(data, nbit)    ((data) &  (1<<(nbit)))
-// #define bitsetv(data, nbit, val)(((data) &= ~(1<<(nbit))) | (val << nbit))
-
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
 
 // ============== Target Specific Definitions ==============
 #ifdef TARGET_HYDROGENSOC
     #define MEM_ROM_BEGIN   0x00010000
-    #define MEM_ROM_SIZE    32*1024        // 32 KB
+    #define MEM_ROM_SIZE    16*1024        // 16 KB
 
     #define MEM_RAM_BEGIN   0x20000000
-    #define MEM_RAM_SIZE    16*1024        // 16 KB
+    #define MEM_RAM_SIZE    32*1024         // 32 KB
 
     // ---------- UART ------------
-    #define UART_ADDR 0x40000000
-    
+    #define UART_D_REG_ADDR 0x40000000
+    #define UART_S_REG_ADDR 0x40000001
+    #define UART_CD_REG_ADDR 0x40000004
+
     // ---------- GPIO ------------
     #define GPIO
     #define GPIO_PINCOUNT 32
@@ -41,7 +43,9 @@
     #define MEM_RAM_SIZE    64*1024*1024    // 64 MB
 
     // ---------- UART ------------
-    #define UART_ADDR 0x40000000
+    #define UART_D_REG_ADDR 0x08000000
+    #define UART_S_REG_ADDR 0x08000001
+    #define UART_CD_REG_ADDR 0x08000004
 
     // ------ CLOCK FREQUENCY --------
     #define CLK_FREQ 12000000

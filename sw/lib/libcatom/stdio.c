@@ -5,12 +5,23 @@
 
 ///////////////////////////////////////////////////////////////////
 // getchar & Putchar use Low-level Serial ports
+
+/**
+ * @brief Reads a character from stdin
+ * 
+ * @return int character
+ */
 int getchar(void)
 {
     return (int) serial_read();
 }
 
 
+/**
+ * @brief Writes a character to stdout.
+ * 
+ * @param chr character
+ */
 void putchar(char chr)
 {
     #ifdef SEND_CR_BEFORE_LF
@@ -24,6 +35,14 @@ void putchar(char chr)
 ///////////////////////////////////////////////////////////////////
 // Other Functions use getchar and putchar
 
+/**
+ * @brief reads a line from stdin and stores it into the string pointed to by str
+ * 
+ * @param str string pointer
+ * @param bufsize max size of string object
+ * @param echo if enabed, sends the recieved char to stdout
+ * @param prompt print prompt before actual string
+ */
 char *gets(char * str, int bufsize, bool echo, char * prompt)
 {
     char *ptr = str;
@@ -93,6 +112,11 @@ char *gets(char * str, int bufsize, bool echo, char * prompt)
 }
 
 
+/**
+ * @brief writes a string to stdout.
+ * 
+ * @param ptr pointer to the string 
+ */
 void puts(char *ptr)
 {
     while(*ptr) 
@@ -100,6 +124,13 @@ void puts(char *ptr)
 }
 
 
+/**
+ * @brief Writes an integer (signed) to stdout
+ * 
+ * @param n number
+ * @param base base
+ * @param uppercase upprtcase flag
+ */
 void putint(long long n, int base, bool uppercase)
 {
     // If number is smaller than 0, put a - sign
@@ -150,6 +181,13 @@ void putint(long long n, int base, bool uppercase)
 }
 
 
+/**
+ * @brief Sends a hexadecimal value to std out
+ * 
+ * @param val integer value
+ * @param digits no of digits to print
+ * @param uppercase uppercase flag
+ */
 void puthex(unsigned int val, int digits, bool uppercase)
 {
 	for (int i = (4*digits)-4; i >= 0; i -= 4)
@@ -162,6 +200,13 @@ void puthex(unsigned int val, int digits, bool uppercase)
 }
 
 
+/**
+ * @brief Printf function
+ * 
+ * @param fmt format specifier string (with placeholders)
+ * @param ... values for placeholders
+ * @return int 
+ */
 int printf(char *fmt,...)
 {
     va_list ap;
@@ -249,28 +294,4 @@ int printf(char *fmt,...)
     va_end(ap);
 
     return 0;
-}
-
-void dumphexbuf(uint8_t *buf, unsigned len, unsigned base_addr)
-{
-    const int bpw = 4; // bytes per word
-    const int wpl = 4; // words per line
-
-    for (unsigned i=0; i<len; i++) {
-        // print address at the start of the line
-        if(i%(wpl*bpw) == 0) {
-            puthex(base_addr+i, 8, false); puts(": ");
-        }
-        
-        // print byte
-        puthex(0xff & buf[i], 2, false); putchar(' ');
-        
-        // extra space at word boundry
-        if(i%bpw == bpw-1)
-            putchar(' ');
-        
-        if(i%(wpl*bpw) == (wpl*bpw-1)) // end of line 
-            putchar('\n');
-    }
-    putchar('\n');
 }

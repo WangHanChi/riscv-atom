@@ -13,15 +13,14 @@ class Vuart;
 
 struct Backend_config
 {
-    uint32_t imem_offset    = 0x00010000;
+    uint32_t imem_offset    = 0x00000000;
     uint32_t imem_size_kb   = (64*1024);    // default: 64 MB
     
-    uint32_t dmem_offset    = 0x20000000;
+    uint32_t dmem_offset    = 0x04000000;
     uint32_t dmem_size_kb   = (64*1024);    // default: 64 MB
 
     std::string vuart_portname  = "";
-    uint32_t vuart_baudrate     = 115200;
-    bool enable_uart_dump       = false;
+    uint32_t vuart_baudrate     = 9600;
 };
 
 

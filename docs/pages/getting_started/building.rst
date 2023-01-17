@@ -12,11 +12,6 @@ Clone the repository
 
 .. note:: All the commands are executed from the root directory unless explicitly mentioned. We'll refer to this root directory as ``RVATOM``.
 
-Edit Config.mk
-***************
-
-Edit Config.mk file and provide paths appropriately
-
 
 RISC-V Atom environment variables
 **********************************

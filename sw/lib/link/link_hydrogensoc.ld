@@ -12,8 +12,8 @@ ENTRY(_start)
 /* MEMORY LAYOUT */
 MEMORY
 {
-    ROM (rx) : ORIGIN = 0x00010000, LENGTH = 32K
-    RAM (rwx): ORIGIN = 0x20000000, LENGTH = 16K
+    ROM (rx) : ORIGIN = 0x00010000, LENGTH = 16K   /* 16KB */
+    RAM (rwx): ORIGIN = 0x20000000, LENGTH = 32K   /* 32KB */
 }
 
 SECTIONS
@@ -23,7 +23,12 @@ SECTIONS
     { 
         /*  ----- Initialization Code ----- */
         *(.boot*)
+        . = ORIGIN(ROM) + 0x100;    /* 256 Bytes (64 Instructions)*/
         
+        /* ----- Interrupt Vector Table ----- */
+        _svector = .;
+        KEEP(*(.vector*))
+
         /* ----- Code ----- */
         /* Load all text sections (from all files) */
         *(.text)
@@ -31,13 +36,7 @@ SECTIONS
         
         . = ALIGN(4);
 
-        /* ----- Read Only Data ----- */
-        *(.rodata)
-        *(.rodata.*)
-
-        . = ALIGN(4);
-         _etext = .;
-
+        _etext = .;
     } > ROM
 
 
@@ -45,12 +44,23 @@ SECTIONS
     /* ==== RAM ==== */
     /* The .data section contains static variables which have an initial value at boot. */
     .data :
-    {           
+    {
+        /* ----- Read Only Data ----- */
+        *(.rodata)
+        *(.rodata.*)
+        
+        . = ALIGN(4);
+        
+        
+        /* ----- Initialized Data ----- */
         _sdata = .;
-
-        /* ----- Initialized Data ----- */       
+        
         *(.data)
         *(.data.*)
+
+        . = ALIGN(4);
+        _edata = .;
+
 
         /* ----- Static Data ----- */
         . = ALIGN(16);
@@ -61,11 +71,9 @@ SECTIONS
         *(.srodata.*)
         
         . = ALIGN(4);
-        _edata = .;
-    
-    } > RAM AT> ROM
-    
+    } > RAM
 
+    
     /* ----- Uninitialized Data ----- */
     /* .bss section which is used for uninitialized data */
     .bss (NOLOAD) :
@@ -76,10 +84,9 @@ SECTIONS
 
         . = ALIGN(4);
         _ebss = .;
-    
-    } > RAM AT> ROM
+    } > RAM
 
-    _end = .;
+    _end = . ;
 }
 
 PROVIDE(_start_heap = _ebss);

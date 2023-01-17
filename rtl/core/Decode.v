@@ -4,34 +4,35 @@
 //  Description : Instruction Decoder for RISCV atom core
 ////////////////////////////////////////////////////////////////////
 `default_nettype none
-`include "Defs.vh"
+
+`define RV32M_ENABLED   1   // ensure M-instruction is useable
+
+
+`include "../Timescale.vh"
+
 module Decode
 (
-    input   wire    [31:0]  instr_i,
+    input   wire    [31:0]  instr_i,    // A full instruction
 
-    output  wire    [4:0]   rd_sel_o,
-    output  wire    [4:0]   rs1_sel_o,
-    output  wire    [4:0]   rs2_sel_o,
+    output  wire    [4:0]   rd_sel_o,   // rd
+    output  wire    [4:0]   rs1_sel_o,  // rs1
+    output  wire    [4:0]   rs2_sel_o,  // rs2
 
     output  wire    [31:0]  imm_o,
 
-    output  reg             jump_en_o,
-    output  reg     [2:0]   comparison_type_o,
+    output  reg             jump_en_o,  // check jump or not
+    output  reg     [2:0]   comparison_type_o,  // check compariosn type
     output  reg             rf_we_o,
     output  reg     [2:0]   rf_din_sel_o,
     output  reg             a_op_sel_o,
     output  reg             b_op_sel_o,
     output  reg             cmp_b_op_sel_o,
-    output  reg     [2:0]   alu_op_sel_o,
+    output  reg     [3:0]   alu_op_sel_o,
     output  wire    [2:0]   mem_access_width_o,
     output  reg             d_mem_load_store,
-    output  reg             mem_we_o
-    
-    `ifdef RV_ZICSR
-    ,
+    output  reg             mem_we_o,
     output  wire    [2:0]   csru_op_sel_o,
     output  reg             csru_we_o
-    `endif
 );
 
     // Decode fields
@@ -40,15 +41,11 @@ module Decode
     wire    [6:0]   func7   = instr_i[31:25];
 
     assign mem_access_width_o = func3;
-
-    `ifdef RV_ZICSR
     assign csru_op_sel_o = func3;
-    `endif
 
-
-    assign  rd_sel_o    = instr_i[11:7];
-    assign  rs1_sel_o   = instr_i[19:15];
-    assign  rs2_sel_o   = instr_i[24:20];
+    assign  rd_sel_o    = instr_i[11:7];    // rd
+    assign  rs1_sel_o   = instr_i[19:15];   // rs1
+    assign  rs2_sel_o   = instr_i[24:20];   // rs2
 
     reg    [2:0] imm_format;
 
@@ -87,10 +84,7 @@ module Decode
         mem_we_o = 1'b0;
         d_mem_load_store = 1'b0;
         imm_format = `RV_IMM_TYPE_U;
-
-        `ifdef RV_ZICSR
         csru_we_o = 0;
-        `endif
 
 
         casez({func7, func3, opcode})
@@ -431,7 +425,89 @@ module Decode
             end
 
             /////////////////////////////////////////////////////////////////////////
-            `ifdef RV_ZICSR
+            /* M-Extension Instructions */
+            
+            /* MUL      */
+            17'b0000001_000_0110011:
+            begin
+                rf_we_o = 1'b1;
+                rf_din_sel_o = 3'd2;
+                a_op_sel_o = 1'b0;
+                b_op_sel_o = 1'b0;
+                alu_op_sel_o = `ALU_FUNC_MUL;
+            end
+
+            /* MULH     */
+            17'b0000001_001_0110011:
+            begin
+                rf_we_o = 1'b1;
+                rf_din_sel_o = 3'd2;
+                a_op_sel_o = 1'b0;
+                b_op_sel_o = 1'b0;
+                alu_op_sel_o = `ALU_FUNC_MULH;
+            end
+
+            /* MULHSU    */
+            17'b0000001_010_0110011:
+            begin
+                rf_we_o = 1'b1;
+                rf_din_sel_o = 3'd2;
+                a_op_sel_o = 1'b0;
+                b_op_sel_o = 1'b0;
+                alu_op_sel_o = `ALU_FUNC_MULHSU;
+            end
+            /* MULHU     */
+            17'b0000001_011_0110011:
+            begin
+                rf_we_o = 1'b1;
+                rf_din_sel_o = 3'd2;
+                a_op_sel_o = 1'b0;
+                b_op_sel_o = 1'b0;
+                alu_op_sel_o = `ALU_FUNC_MULHU;
+            end
+
+            /* DIV      */
+            17'b0000001_100_0110011:
+            begin
+                rf_we_o = 1'b1;
+                rf_din_sel_o = 3'd2;
+                a_op_sel_o = 1'b0;
+                b_op_sel_o = 1'b0;
+                alu_op_sel_o = `ALU_FUNC_DIV;
+            end
+
+            /* DIVU     */
+            17'b0000001_101_0110011:
+            begin
+                rf_we_o = 1'b1;
+                rf_din_sel_o = 3'd2;
+                a_op_sel_o = 1'b0;
+                b_op_sel_o = 1'b0;
+                alu_op_sel_o = `ALU_FUNC_DIVU;
+            end
+
+            /* REM      */
+            17'b0000001_110_0110011:
+            begin
+                rf_we_o = 1'b1;
+                rf_din_sel_o = 3'd2;
+                a_op_sel_o = 1'b0;
+                b_op_sel_o = 1'b0;
+                alu_op_sel_o = `ALU_FUNC_REM;
+            end
+
+            /* REMU     */
+            17'b0000001_111_0110011:
+            begin
+                rf_we_o = 1'b1;
+                rf_din_sel_o = 3'd2;
+                a_op_sel_o = 1'b0;
+                b_op_sel_o = 1'b0;
+                alu_op_sel_o = `ALU_FUNC_REMU;
+            end
+
+            /////////////////////////////////////////////////////////////////////////
+
             /* CSR Instructions */
             17'b???????_???_1110011:begin
                 rf_we_o = (rd_sel_o!=0);   // CSR Reads should not take place if rs1 == x0
@@ -439,7 +515,6 @@ module Decode
                 csru_we_o = 1;
                 imm_format = `RV_IMM_TYPE_I;
             end
-            `endif
 
             default: begin
                 jump_en_o = 0;
@@ -452,13 +527,10 @@ module Decode
                 alu_op_sel_o = 0;
                 mem_we_o = 1'b0;
                 imm_format = 0;
-
-                `ifdef RV_ZICSR
                 csru_we_o = 0;
-                `endif
 
                 `ifdef verilator
-                    if(opcode != 7'b1110011) // EBREAK
+                    if(opcode != 7'b1110011 && opcode != 7'b0001111) // EBREAK
                         $display("!Warning: Unimplemented Opcode: %b", opcode);
                 `endif
             end            
