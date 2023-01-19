@@ -165,11 +165,11 @@ dhrystone:
 	atomsim --maxitr 100000000 -t sw/examples/dhrystone/dhrystone.elf
 
 .PHONY: riscv-test
-riscv-test: 
-	./scripts/riscv-test.sh	
-	
-
-include mk/riscv-arch-test.mk
-# ======== test ========
-.PHONY: test
-test: $(MAKE) -C test test
+riscv-test: clean sim
+	cd test/riscv-tests;\
+	autoconf;\
+	./configure --prefix=$RISCV/target;\
+	make;\
+	sudo make install;\
+	cd .. && cd ..;\
+	./scripts/riscv-test.sh;\

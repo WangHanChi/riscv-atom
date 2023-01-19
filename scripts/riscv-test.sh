@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+# riscv-tests : https://github.com/riscv-software-src/riscv-tests
 # riscv-test dir
 
 RED="\e[31m"
@@ -7,6 +9,13 @@ GREEN="\e[32m"
 ORANGE="\e[33m"
 CYAN="\e[36m"
 NOCOLOR="\e[0m"
+
+# cd /home/$USER/riscv-atom/test/riscv-tests
+# autoconf
+# ./configure --prefix=$RISCV/target
+# echo "8888888888888888888888888888888"
+# $(make isa)
+# # sudo make install
 
 cd /home/$USER/riscv-atom/test/riscv-tests/isa
 
@@ -63,6 +72,9 @@ do
     total_rv32um=$(($total_rv32um+1))
     echo
 done
+
+cd /home/$USER/riscv-atom/test/riscv-tests
+make clean
 
 echo "=============================="
 echo "rv32ui-p instruction set :"

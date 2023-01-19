@@ -1,5 +1,5 @@
 prefix          := /target
-abs_top_src_dir := /home/hanchi/riscv-atom/test/riscv-tests
+abs_top_src_dir := /home/hank/riscv-atom/test/riscv-tests
 XLEN            := 64
 target_alias    := 
 ifeq ($(target_alias),)
